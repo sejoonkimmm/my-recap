@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Recap</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+          },
+        },
+      },
+    }
+  </script>
+  <style>
+    * {
+      font-family: 'Inter', system-ui, sans-serif;
+    }
+    .gradient-bg {
+      background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #a855f7 100%);
+      min-height: 100vh;
+    }
+    .card {
+      background: rgba(255, 255, 255, 0.98);
+      box-shadow: 
+        0 4px 6px -1px rgba(0, 0, 0, 0.05),
+        0 10px 15px -3px rgba(0, 0, 0, 0.08),
+        0 20px 25px -5px rgba(0, 0, 0, 0.05);
+    }
+    .drop-zone {
+      transition: all 0.2s ease;
+    }
+    .drop-zone.dragover {
+      border-color: #6366f1;
+      background: rgba(99, 102, 241, 0.05);
+      transform: scale(1.01);
+    }
+    .issue-link {
+      transition: all 0.15s ease;
+    }
+    .issue-link:hover {
+      background: rgba(99, 102, 241, 0.06);
+      transform: translateX(2px);
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+      box-shadow: 0 4px 14px 0 rgba(99, 102, 241, 0.35);
+      transition: all 0.2s ease;
+    }
+    .btn-primary:hover {
+      box-shadow: 0 6px 20px 0 rgba(99, 102, 241, 0.45);
+      transform: translateY(-1px);
+    }
+    .btn-primary:active {
+      transform: translateY(0);
+    }
+    .btn-secondary {
+      transition: all 0.15s ease;
+    }
+    .btn-secondary:hover {
+      background: #6366f1;
+      color: white;
+    }
+    .input-field {
+      transition: all 0.2s ease;
+      border: 1.5px solid #e5e7eb;
+    }
+    .input-field:focus {
+      border-color: #6366f1;
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+      outline: none;
+    }
+    .loading-overlay {
+      backdrop-filter: blur(4px);
+      background: rgba(0, 0, 0, 0.4);
+    }
+    .loading-card {
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    }
+    .section-title {
+      letter-spacing: -0.025em;
+    }
+  </style>
+</head>
+<body class="gradient-bg antialiased">
+  <div class="container mx-auto px-4 py-12 max-w-3xl">
+    <header class="text-center mb-10">
+      <h1 class="text-4xl font-bold text-white mb-3 tracking-tight">My Recap</h1>
+      <p class="text-white/70 text-base font-medium">Linear Issues + Performance Docs → AI Summary</p>
+    </header>
+
+    <div class="card rounded-2xl p-8 mb-6">
+      <div class="mb-8">
+        <label class="block text-sm font-semibold text-gray-600 mb-3 uppercase tracking-wide">Select Period</label>
+        <div class="flex gap-4 items-center">
+          <input type="date" id="startDate" class="input-field flex-1 px-4 py-3 rounded-xl text-gray-700 font-medium">
+          <span class="text-gray-400 font-medium">to</span>
+          <input type="date" id="endDate" class="input-field flex-1 px-4 py-3 rounded-xl text-gray-700 font-medium">
+        </div>
+      </div>
+
+      <div class="mb-8">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-lg font-semibold text-gray-800 section-title">Linear Issues</h2>
+          <button id="fetchLinear" class="btn-secondary px-5 py-2.5 bg-gray-100 text-gray-700 font-semibold rounded-xl text-sm">
+            Fetch Issues
+          </button>
+        </div>
+        <div id="linearIssues" class="bg-gray-50/80 rounded-xl p-5 min-h-[120px] text-gray-400 text-sm border border-gray-100">
+          Fetch completed issues from Linear...
+        </div>
+      </div>
+
+      <div class="mb-8">
+        <h2 class="text-lg font-semibold text-gray-800 mb-4 section-title">Performance Docs <span class="text-gray-400 font-normal text-sm">(Optional)</span></h2>
+        <div id="dropZone" class="drop-zone border-2 border-dashed border-gray-200 rounded-xl p-10 text-center cursor-pointer hover:border-indigo-300 bg-gray-50/50">
+          <div class="text-gray-400">
+            <svg class="mx-auto h-10 w-10 mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+            </svg>
+            <p class="font-medium">Drag & drop MD files or click to upload</p>
+          </div>
+          <input type="file" id="fileInput" accept=".md" multiple class="hidden">
+        </div>
+        <div id="uploadedFiles" class="mt-4 space-y-2"></div>
+      </div>
+
+      <button id="generateRecap" class="btn-primary w-full py-4 text-white font-semibold rounded-xl text-base disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-none">
+        Generate Summary
+      </button>
+    </div>
+
+    <div id="resultCard" class="card rounded-2xl p-8 hidden">
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="text-xl font-bold text-gray-800 section-title">Performance Summary</h2>
+        <button id="copyResult" class="btn-secondary px-4 py-2 text-sm font-semibold bg-gray-100 text-gray-600 rounded-lg">
+          Copy
+        </button>
+      </div>
+      <div id="recapResult" class="prose prose-gray max-w-none text-gray-700 leading-relaxed"></div>
+    </div>
+
+    <div id="loading" class="loading-overlay fixed inset-0 flex items-center justify-center hidden z-50">
+      <div class="loading-card bg-white rounded-2xl p-10 text-center">
+        <div class="animate-spin rounded-full h-10 w-10 border-[3px] border-indigo-500 border-t-transparent mx-auto mb-5"></div>
+        <p class="text-gray-600 font-medium" id="loadingText">Loading...</p>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
